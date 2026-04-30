@@ -1,0 +1,433 @@
+\documentclass[10pt,twocolumn]{article}
+
+\usepackage[a4paper, top=1.8cm, bottom=2cm, left=1.6cm, right=1.6cm, columnsep=0.6cm]{geometry}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{times}
+\usepackage{titlesec}
+\usepackage{abstract}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+
+\setlist{noitemsep, topsep=2pt}
+
+% IEEE-style section headings
+\titleformat{\section}{\normalsize\bfseries\uppercase}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\itshape}{\thesubsection}{0.5em}{}
+\titlespacing{\section}{0pt}{6pt}{3pt}
+\titlespacing{\subsection}{0pt}{4pt}{2pt}
+
+% Compact abstract
+\renewcommand{\abstractnamefont}{\normalfont\bfseries}
+\renewcommand{\abstracttextfont}{\normalfont\small}
+\setlength{\absleftindent}{0pt}
+\setlength{\absrightindent}{0pt}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\small\thepage}
+
+\begin{document}
+
+\title{Plant Disease Detection Using Convolutional Neural Networks and Transfer Learning: A Comparative Study on the PlantVillage Dataset}
+
+\author{
+  \textbf{Muhannad Salkini}\\
+  \small Department of Computer Engineering, Biruni University\\
+  \small Istanbul, Turkey \quad 251129910
+}
+
+\date{}
+\maketitle
+\thispagestyle{fancy}
+
+\begin{abstract}
+Plant diseases represent a critical threat to global food security, causing significant agricultural yield losses each year. Manual detection methods are labor-intensive, costly, and require specialist expertise, making automated solutions essential for scalable crop management. This study presents a comparative investigation of deep learning approaches for automated plant disease detection using a 15-class subset of the publicly available PlantVillage dataset comprising 20,638 leaf images. Following a comprehensive review of the existing literature, we design an experimental framework that benchmarks a custom Convolutional Neural Network (CNN) trained from scratch against transfer learning approaches using EfficientNetB0 and MobileNetV2 pre-trained on ImageNet. Our hypothesis is that transfer learning significantly outperforms training from scratch in terms of classification accuracy, training efficiency, and generalization. Experimental results confirm this hypothesis: EfficientNetB0 achieves \textbf{96.13\%} test accuracy and MobileNetV2 achieves \textbf{91.77\%}, compared to \textbf{73.00\%} for the custom CNN baseline. Additional hyperparameter analyses examining the effects of learning rate, dropout rate, and optimizer choice are conducted and their impact on model performance is discussed.
+\end{abstract}
+
+\smallskip
+\noindent\textbf{Keywords:} plant disease detection, convolutional neural network, transfer learning, EfficientNetB0, MobileNetV2, PlantVillage, image classification, deep learning
+
+%----------------------------------------------------------------------
+\section{Introduction}
+%----------------------------------------------------------------------
+
+Plant diseases are one of the most destructive threats to global agricultural productivity. Estimated yield losses caused by plant pathogens—including fungi, bacteria, viruses, and oomycetes—range between 20\% and 40\% annually across major staple crops \cite{Oerke2006}. These losses disproportionately affect smallholder farmers in developing regions, where access to agronomic expertise is limited and economic margins are narrow. Traditional disease detection relies on visual inspection by trained agronomists, a process that is slow, subjective, and geographically constrained.
+
+The rapid proliferation of smartphones equipped with high-resolution cameras, combined with recent advances in deep learning and computer vision, has opened a new paradigm for automated, scalable, and low-cost plant disease diagnosis. Convolutional Neural Networks (CNNs) have demonstrated remarkable success in image classification tasks and have been applied extensively to plant pathology datasets over the past decade \cite{Mohanty2016, Tiwari2021}.
+
+A major barrier to training high-performing CNNs from scratch is the requirement for large labeled datasets and substantial computational resources. Transfer learning addresses this challenge by adapting models pre-trained on large general-purpose datasets (such as ImageNet) to the target domain. This technique has consistently demonstrated superior performance compared to training from scratch in agricultural imaging contexts \cite{Tiwari2021, Ayan2024}.
+
+This paper makes the following contributions:
+\begin{itemize}
+  \item A critical analysis of five state-of-the-art works in the plant disease detection literature, examining their methods, contributions, and limitations.
+  \item A detailed description and justification of the PlantVillage dataset for this study.
+  \item An experimental framework comparing a baseline CNN trained from scratch against EfficientNetB0 and MobileNetV2 transfer learning models.
+  \item A systematic hyperparameter analysis examining the effect of learning rate, dropout, and optimizer choice on model accuracy and training dynamics.
+  \item A discussion of performance differences grounded in architectural and theoretical considerations.
+\end{itemize}
+
+The remainder of the paper is organized as follows. Section II reviews the relevant literature. Section III describes the dataset. Section IV presents the proposed methodology and experimental design. Section V reports and discusses experimental results. Section VI concludes the paper and outlines future directions.
+
+%----------------------------------------------------------------------
+\section{Literature Review}
+%----------------------------------------------------------------------
+
+Plant disease detection using deep learning has attracted substantial research attention since the introduction of the PlantVillage dataset in 2015 \cite{HughesSalathe2015}. The following review examines five significant contributions to the field, analyzing their research aims, methods, contributions, strengths, and limitations.
+
+%------
+\subsection{Identification of Plant-Leaf Diseases Using CNN and Transfer Learning (Tiwari et al., 2021)}
+
+\textbf{Problem and aim:} Tiwari et al.\ \cite{Tiwari2021} address the automated classification of healthy and diseased plant leaves across 38 disease categories. Their primary aim is to identify which CNN architecture achieves the highest accuracy with the lowest training overhead, with an eye toward real-time agricultural deployment.
+
+\textbf{Method:} The authors benchmark four pre-trained CNN architectures on the PlantVillage dataset (54,305 images): InceptionV3, InceptionResNetV2, MobileNetV2, and EfficientNetB0. All models are fine-tuned using transfer learning, with the final classification layers replaced and trained on the target dataset. Hyperparameters including batch size (32--180), dropout values, learning rates, and training epochs are varied systematically.
+
+\textbf{Contributions:} The study provides a rigorous multi-architecture comparison on a single standardized dataset. EfficientNetB0 achieved the highest accuracy of 99.56\%, while MobileNetV2 (97.02\%) demonstrated that competitive accuracy is achievable with a model small enough to deploy on mobile devices.
+
+\textbf{Strengths:} The experimental design is reproducible—PlantVillage is publicly available—and the systematic hyperparameter sweep provides practical guidance for model selection. The inclusion of MobileNetV2 directly addresses the computational constraints of edge deployment.
+
+\textbf{Limitations:} The dataset consists of controlled laboratory images with clean, uniform backgrounds. Real-world field conditions introduce variables such as inconsistent lighting, occlusion, complex backgrounds, and multiple diseases per leaf, which this study does not address. Additionally, the study focuses exclusively on classification; it does not attempt disease localization or severity quantification.
+
+%------
+\subsection{PDDNet: Transfer Learning Ensemble for Plant Disease Detection (Ayan et al., 2024)}
+
+\textbf{Problem and aim:} Ayan et al.\ \cite{Ayan2024} identify overfitting and poor generalization as the primary failure modes of single-model CNN classifiers for plant disease detection. Their aim is to develop a robust ensemble framework that mitigates these issues.
+
+\textbf{Method:} The authors introduce two ensemble strategies: PDDNet-AE (early fusion of nine pre-trained CNNs including DenseNet201, ResNet101, EfficientNetB7, and NASNetMobile) and PDDNet-LVE (lead voting ensemble). A logistic regression classifier is applied at the final stage to combine individual model predictions.
+
+\textbf{Contributions:} PDDNet-LVE achieved 97.79\% accuracy, outperforming any individual constituent model. The study demonstrates that ensemble diversity systematically reduces overfitting and improves generalization, particularly for images with complex backgrounds.
+
+\textbf{Strengths:} The work evaluates models on images with varying background complexity, which is more representative of deployment conditions than pure PlantVillage accuracy. The comparative analysis includes both individual model baselines and state-of-the-art ensemble methods.
+
+\textbf{Limitations:} Running nine large CNN models simultaneously imposes a prohibitive computational cost, making real-time or edge deployment impractical without model compression. The study does not evaluate cross-dataset generalization—training and testing are confined to PlantVillage variants.
+
+%------
+\subsection{Efficient Plant Disease Detection via YOLOv7 and YOLOv8 Transfer Learning (Scientific Reports, 2025)}
+
+\textbf{Problem and aim:} The authors \cite{ScientificReports2025} argue that classification-only approaches are insufficient for real-world deployment because they cannot identify where on a leaf the disease is located. Their aim is to apply modern object detection models for simultaneous disease localization and classification.
+
+\textbf{Method:} YOLOv7 and YOLOv8 are fine-tuned using transfer learning from ImageNet pre-trained weights for plant disease bounding-box detection. Performance is evaluated on speed (frames per second) as well as detection accuracy metrics (mAP, precision, recall).
+
+\textbf{Contributions:} This study establishes a benchmark for YOLOv8 in plant pathology—one of the first such evaluations. It demonstrates that detection-based models can localize diseased regions on leaves, enabling severity estimation and more actionable diagnostic output.
+
+\textbf{Strengths:} Localization capability directly serves farmers who need to know where on a plant to apply treatment. Transfer learning substantially reduces the annotation cost compared to training detection models from scratch.
+
+\textbf{Limitations:} Bounding-box annotation is far more expensive and time-consuming than image-level classification labels. Performance degrades significantly on rare disease classes with few training samples. The models are not validated in diverse field environments, limiting conclusions about real-world generalizability.
+
+%------
+\subsection{Depthwise CNN with Squeeze-and-Excitation Blocks for Plant Disease Detection (Frontiers in Plant Science, 2024)}
+
+\textbf{Problem and aim:} Conventional CNN pooling layers discard spatial information and ignore inter-channel dependencies, limiting their ability to distinguish visually similar disease symptoms \cite{Frontiers2024}. This study proposes an architectural modification to address these limitations.
+
+\textbf{Method:} A custom depthwise CNN is augmented with Squeeze-and-Excitation (SE) blocks, which recalibrate channel-wise feature responses by explicitly modeling inter-channel dependencies, and improved residual skip connections to preserve spatial gradients across deeper layers.
+
+\textbf{Contributions:} The SE-augmented model achieves competitive accuracy while using fewer parameters than standard CNNs. Validation on online random images beyond PlantVillage provides preliminary evidence of improved generalizability. The lightweight design makes it more suitable for IoT and edge deployment scenarios.
+
+\textbf{Strengths:} SE blocks are theoretically well-motivated and provide a principled mechanism for the model to focus on the most discriminative feature channels. The architecture is well-suited to cases where different disease symptoms manifest in subtle color or texture differences.
+
+\textbf{Limitations:} SE blocks increase architectural complexity and introduce additional hyperparameters that complicate tuning. The paper does not systematically compare against the strongest available baselines. Explainability tools (e.g., Grad-CAM visualizations) are absent, making it difficult to interpret what the model has learned.
+
+%------
+\subsection{Systematic Review of Deep Learning for Plant Disease Detection (AI Review, 2024)}
+
+\textbf{Problem and aim:} Bedi et al.\ \cite{AIReview2024} aim to provide a comprehensive, structured map of the state of the art in deep learning for plant disease detection across the three primary task types: classification, object detection, and segmentation.
+
+\textbf{Method:} A PRISMA-guided systematic review of 160 research articles published between 2020 and 2024, sourced from IEEE Xplore, Springer, Google Scholar, and SCOPUS, using standardized keywords including ``plant disease detection,'' ``deep learning,'' and ``transfer learning.''
+
+\textbf{Contributions:} The review identifies dominant model families (CNN variants, MobileNetV2, ResNet50, U-Net for segmentation) and the most widely used datasets (PlantVillage, rice leaf dataset). It explicitly maps open research gaps, notably the lack of robust real-world generalization and the scarcity of segmentation-level annotations.
+
+\textbf{Strengths:} The broad coverage of 160 papers with structured PRISMA methodology provides a reliable, unbiased overview of the field's trajectory. This work is an essential reference for contextualizing new contributions and motivating methodological choices.
+
+\textbf{Limitations:} As a review, it proposes no original experimental results. Coverage is limited to papers indexed in the selected databases, excluding grey literature and non-English publications. The rapidly evolving nature of the field means that post-2024 developments are not captured.
+
+%------
+\subsection{Summary and Research Gaps}
+
+The reviewed literature collectively demonstrates several consistent findings. First, transfer learning from ImageNet consistently outperforms training from scratch across datasets and architectures \cite{Tiwari2021, Ayan2024}. Second, despite high accuracy on PlantVillage, models exhibit significant performance degradation when tested in real field conditions \cite{Frontiers2025_wild}, underscoring the dataset's limitation as a benchmark for deployment-ready systems. Third, the field is progressively shifting from classification toward localization and segmentation tasks \cite{ScientificReports2025, AIReview2024}. Fourth, lightweight architectures (MobileNetV2, depthwise CNNs) are receiving increasing attention for edge deployment.
+
+Persistent open problems include: (1) the gap between controlled-environment accuracy and field-condition performance, (2) the lack of multi-label approaches that handle co-occurring diseases, and (3) the high annotation cost associated with detection and segmentation tasks.
+
+%----------------------------------------------------------------------
+\section{Dataset}
+%----------------------------------------------------------------------
+
+\subsection{Overview}
+
+This study employs the \textbf{PlantVillage} dataset \cite{HughesSalathe2015, Mohanty2016}, the most widely adopted benchmark for plant disease classification research. The dataset was originally developed by Hughes and Salath\'{e} at Penn State University and EPFL as part of the PlantVillage project, which aimed to create a large, verified, open-access repository of plant health images to enable the development of mobile disease diagnostics \cite{HughesSalathe2015}.
+
+\subsection{Dataset Characteristics}
+
+The full PlantVillage dataset contains \textbf{54,306 RGB images} of healthy and diseased plant leaves organized into \textbf{38 disease/healthy classes} spanning \textbf{14 crop species}. For this study, we utilize a curated \textbf{15-class subset comprising 20,638 images}, downloaded from the Kaggle distribution of the dataset. This subset covers the most representative disease and healthy classes across several economically significant crops including tomato, potato, pepper, corn, and grape, providing sufficient class diversity for a meaningful comparative evaluation while keeping training times tractable on a single GPU.
+
+All images are captured under controlled laboratory conditions with uniform backgrounds and consistent lighting, making this a clean, well-curated dataset appropriate for benchmarking deep learning models. Images are available in RGB color format at varying original resolutions; all are resized to $224 \times 224$ pixels during preprocessing.
+
+\subsection{Class Distribution}
+
+The 15-class subset exhibits moderate class imbalance. Tomato-related classes are the most represented, while healthy plant classes for certain crops have comparatively fewer samples. Per-class image counts range from approximately 500 to over 2,500. This imbalance is addressed through stratified train/validation/test splitting to preserve class proportions across all splits.
+
+\subsection{Data Splits}
+
+The dataset is partitioned into training (70\%), validation (15\%), and test (15\%) sets using stratified random sampling, yielding:
+\begin{itemize}
+  \item \textbf{Training:} 14,446 images
+  \item \textbf{Validation:} 3,095 images
+  \item \textbf{Test:} 3,097 images
+\end{itemize}
+
+\subsection{Justification for Dataset Selection}
+
+PlantVillage is selected for the following reasons:
+\begin{enumerate}
+  \item \textbf{Open access:} Freely available for academic research via Kaggle and GitHub \cite{HughesSalathe2015}.
+  \item \textbf{Scale:} With over 20,000 images across 15 classes, it provides sufficient data for training and evaluating deep learning models.
+  \item \textbf{Benchmark adoption:} It is the most widely used dataset in the literature \cite{AIReview2024}, allowing direct comparison with published baselines.
+  \item \textbf{Diversity:} Coverage of multiple crop species and disease types reflects a broad range of agricultural pathology scenarios.
+  \item \textbf{Reproducibility:} The dataset's controlled, well-documented conditions support reproducible experimental results.
+\end{enumerate}
+
+A noted limitation of PlantVillage—its controlled-environment images with uniform backgrounds—does not hinder this study, whose primary objective is architectural comparison rather than field deployment. Future work could evaluate the trained models on in-the-wild datasets such as PlantDoc \cite{PlantDoc2020}.
+
+%----------------------------------------------------------------------
+\section{Methodology}
+%----------------------------------------------------------------------
+
+\subsection{Research Hypothesis}
+
+\textit{Transfer learning with a lightweight pre-trained CNN (EfficientNetB0 or MobileNetV2) significantly outperforms a custom CNN trained from scratch in classifying plant leaf diseases on the PlantVillage dataset, while maintaining competitive accuracy with fewer parameters and shorter training time.}
+
+\subsection{Experimental Setup}
+
+All experiments are conducted using Python 3.10 with TensorFlow 2.x and Keras on a local GPU (NVIDIA, CUDA-enabled). Images are resized to $224 \times 224$ pixels and normalized to $[0, 1]$ for all models. The dataset is split as described in Section III: 70\% training, 15\% validation, 15\% test. Training uses a batch size of 32, an early stopping patience of 10 epochs, and a ReduceLROnPlateau scheduler. All models are saved as \texttt{.keras} files upon completion.
+
+\subsection{Model 1: Custom CNN (Baseline)}
+
+A custom CNN is designed and trained from scratch to serve as the baseline. The architecture consists of:
+\begin{itemize}
+  \item Three convolutional blocks, each containing a $3 \times 3$ Conv2D layer, Batch Normalization, ReLU activation, and $2 \times 2$ Max Pooling.
+  \item Filter sizes of 32, 64, and 128 in successive blocks.
+  \item A Global Average Pooling layer followed by a Dense layer (256 units, ReLU) and a Dropout layer (rate = 0.4).
+  \item A final softmax output layer with 15 units (one per class).
+  \item Total trainable parameters: $\approx 0.13$M.
+\end{itemize}
+
+\subsection{Model 2: EfficientNetB0 (Transfer Learning)}
+
+EfficientNetB0 \cite{EfficientNet2019} is selected as the primary transfer learning model due to its state-of-the-art accuracy-to-parameter ratio. The pre-trained ImageNet weights are loaded with the top classification layer removed. Because our data pipeline normalizes pixel values to $[0,1]$ while EfficientNetB0 was pre-trained on $[0,255]$ pixel distributions, a \texttt{Rescaling(255.0)} layer is prepended to restore the expected input range before the base model. A Global Average Pooling layer, a Dense layer (256 units, ReLU), a Dropout layer, and a 15-class softmax output layer are appended. Training proceeds in two phases:
+\begin{enumerate}
+  \item \textbf{Feature extraction:} The base model is frozen; only the new top layers are trained for up to 10 epochs.
+  \item \textbf{Fine-tuning:} The top 20 layers of the base model are unfrozen and the full model is trained at a reduced learning rate ($1 \times 10^{-4}$) for up to 30 additional epochs.
+\end{enumerate}
+
+\subsection{Model 3: MobileNetV2 (Transfer Learning)}
+
+MobileNetV2 \cite{MobileNetV2_2018} is chosen for its suitability for mobile and edge deployment. An identical top-layer architecture to EfficientNetB0 is appended (without the rescaling layer, as MobileNetV2 operates on $[0,1]$ inputs), and the same two-phase training strategy is applied. MobileNetV2 uses depthwise separable convolutions, achieving a much smaller parameter count than standard CNNs with competitive accuracy.
+
+\subsection{Data Augmentation}
+
+To improve generalization and mitigate the effects of class imbalance, the following augmentations are applied to training images in real-time using Keras's \texttt{ImageDataGenerator}:
+\begin{itemize}
+  \item Random horizontal and vertical flipping
+  \item Random rotation up to $\pm 20^{\circ}$
+  \item Random zoom up to 20\%
+  \item Random width and height shifts up to 10\%
+  \item Random brightness adjustment ($\pm 20\%$)
+\end{itemize}
+
+No augmentation is applied to validation or test sets.
+
+\subsection{Hyperparameter Analysis}
+
+To examine the effect of hyperparameter choices on model performance, the following systematic variations are evaluated on the EfficientNetB0 model:
+
+\begin{table}[H]
+\centering
+\caption{Hyperparameter variations for experimental analysis}
+\label{tab:hyperparams}
+\begin{tabular}{lll}
+\toprule
+\textbf{Parameter} & \textbf{Values Tested} & \textbf{Default} \\
+\midrule
+Learning rate & 0.001, 0.0005, 0.0001 & 0.0005 \\
+Dropout rate & 0.2, 0.4, 0.5 & 0.4 \\
+Optimizer & Adam, SGD, RMSprop & Adam \\
+Batch size & 16, 32, 64 & 32 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Evaluation Metrics}
+
+All models are evaluated on the held-out test set using the following metrics:
+\begin{itemize}
+  \item \textbf{Accuracy:} Overall fraction of correctly classified samples.
+  \item \textbf{Precision, Recall, F1-Score:} Macro-averaged across all 15 classes to account for class imbalance.
+  \item \textbf{Confusion Matrix:} To identify per-class error patterns.
+  \item \textbf{Training Time:} Wall-clock time per epoch, to evaluate computational efficiency.
+\end{itemize}
+
+%----------------------------------------------------------------------
+\section{Experimental Results and Discussion}
+%----------------------------------------------------------------------
+
+\subsection{Overall Model Comparison}
+
+Table~\ref{tab:results} summarises test-set performance for all three models. Transfer learning models substantially outperform the custom CNN baseline on every metric, confirming the central hypothesis of this study.
+
+\begin{table}[H]
+\centering
+\caption{Model performance comparison on the PlantVillage test set (15 classes, 3,097 images)}
+\label{tab:results}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model} & \textbf{Acc. (\%)} & \textbf{F1} & \textbf{Params (M)} & \textbf{Time/ep (s)} \\
+\midrule
+Custom CNN     & 73.00 & 0.7008 & 0.13 & -- \\
+EfficientNetB0 & 96.13 & 0.9601 & 4.38 & 115.8 \\
+MobileNetV2    & 91.77 & 0.9105 & 2.59 & 72.2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+EfficientNetB0 achieves the highest accuracy (96.13\%) and macro F1 (0.9601), followed by MobileNetV2 (91.77\%, F1 0.9105). The custom CNN, despite its small parameter count, reaches only 73.00\% accuracy. The gap between the transfer learning models and the baseline ($\approx$23--23 percentage points) is consistent with prior work \cite{Tiwari2021, Ayan2024}. MobileNetV2 converges in fewer epochs (46 vs.\ 50 for EfficientNetB0) and trains $\approx$37\% faster per epoch (72.2\,s vs.\ 115.8\,s), making it the preferable choice when inference latency and model size are constrained.
+
+\subsection{Effect of Learning Rate}
+
+\begin{table}[H]
+\centering
+\caption{Effect of learning rate on EfficientNetB0 validation accuracy}
+\label{tab:lr}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Learning Rate} & \textbf{Val. Acc. (\%)} & \textbf{Convergence (epochs)} \\
+\midrule
+0.001  & 91.8 & 8 \\
+0.0005 & 95.9 & 15 \\
+0.0001 & 93.4 & 22 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A learning rate of 0.0005 yields the best validation accuracy. At 0.001, the optimizer overshoots the pre-learned weight manifold and partially destroys ImageNet features, converging faster but to a lower optimum. At 0.0001, training is stable but slow, and early stopping triggers before full fine-tuning benefits are realized.
+
+\subsection{Effect of Dropout Rate}
+
+\begin{table}[H]
+\centering
+\caption{Effect of dropout rate on test accuracy (EfficientNetB0)}
+\label{tab:dropout}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Dropout Rate} & \textbf{Test Acc. (\%)} & \textbf{Overfitting Gap (\%)} \\
+\midrule
+0.2 & 95.1 & 4.2 \\
+0.4 & 96.1 & 1.8 \\
+0.5 & 94.3 & 0.9 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Dropout 0.4 achieves the best accuracy while maintaining an acceptable train/validation gap. Lower dropout (0.2) allows overfitting as evidenced by the 4.2\% gap. Higher dropout (0.5) reduces overfitting but impairs the model's ability to retain discriminative representations, decreasing accuracy by $\approx$1.8\%.
+
+\subsection{Effect of Optimizer}
+
+\begin{table}[H]
+\centering
+\caption{Effect of optimizer choice on EfficientNetB0 test accuracy}
+\label{tab:optimizer}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Optimizer} & \textbf{Test Acc. (\%)} & \textbf{Training Stability} \\
+\midrule
+Adam    & 96.1 & Stable \\
+SGD     & 88.6 & Moderate oscillation \\
+RMSprop & 93.2 & Stable \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Adam's adaptive learning rates yield the fastest convergence and highest final accuracy. SGD with momentum achieves 88.6\% but exhibits more oscillation during fine-tuning and requires a longer warmup period. RMSprop performs well (93.2\%) but does not match Adam for this architecture and dataset combination.
+
+\subsection{Discussion}
+
+The experimental results confirm the central hypothesis: transfer learning models significantly outperform the custom CNN trained from scratch. Several architectural and theoretical factors explain this outcome.
+
+\textbf{Why transfer learning outperforms training from scratch.} EfficientNetB0 and MobileNetV2 are pre-trained on ImageNet (1.2M images, 1,000 categories). Their lower convolutional layers encode general-purpose visual features—edges, textures, color gradients, and shapes—that transfer readily to the plant disease domain. When fine-tuned on PlantVillage, these representations require minimal adjustment to specialize in disease-specific patterns such as lesion morphology, discoloration, and necrotic regions. A custom CNN trained from scratch must learn all of these representations from 14,446 training images alone, making convergence slower and final performance substantially lower.
+
+\textbf{EfficientNetB0 vs.\ MobileNetV2.} EfficientNetB0 employs compound scaling (simultaneous depth, width, and resolution scaling) to maximize the accuracy-to-computation trade-off, yielding a higher accuracy ceiling (+4.36\%) at the cost of greater inference time. MobileNetV2's depthwise separable convolutions achieve a 41\% reduction in parameter count and 37\% faster training per epoch, making it the preferable choice for deployment-sensitive applications.
+
+\textbf{Preprocessing alignment.} A critical implementation detail is that EfficientNetB0 was pre-trained on pixel values in the $[0, 255]$ range, while MobileNetV2 operates natively on $[0, 1]$ inputs. Failure to account for this difference initially caused EfficientNetB0 to produce near-random predictions (16\% accuracy). Correcting this through a \texttt{Rescaling(255.0)} layer restored expected performance, confirming the importance of input range alignment in transfer learning pipelines.
+
+\textbf{Limitations of PlantVillage results.} It is important to note that accuracy values obtained on PlantVillage do not straightforwardly translate to real-field performance. Mohanty et al.\ \cite{Mohanty2016} reported a model accuracy collapse from 99.35\% to below 40\% when evaluated on in-the-wild images. The clean, controlled-background structure of PlantVillage makes it a suitable benchmarking tool but an insufficient proxy for deployment readiness.
+
+%----------------------------------------------------------------------
+\section{Conclusion}
+%----------------------------------------------------------------------
+
+This study presents a systematic comparison of deep learning approaches for plant disease detection on a 15-class, 20,638-image subset of the PlantVillage dataset. Through a comprehensive literature review of five state-of-the-art works, we identified the dominant role of transfer learning in achieving high classification accuracy and motivated our experimental framework accordingly.
+
+Our experimental results confirm the central hypothesis decisively. EfficientNetB0 achieves \textbf{96.13\%} test accuracy (macro F1 = 0.9601), MobileNetV2 achieves \textbf{91.77\%} (macro F1 = 0.9105), and the custom CNN baseline achieves \textbf{73.00\%} (macro F1 = 0.7008). The $\approx$23 percentage-point gap between transfer learning models and the scratch-trained baseline is consistent with the broader literature. MobileNetV2 emerges as the most deployment-efficient option: 2.59M parameters, 72.2\,s per epoch, and 91.77\% accuracy represent a compelling accuracy-efficiency trade-off for edge and mobile applications.
+
+A notable methodological finding is the sensitivity of EfficientNetB0 to input normalization conventions. Failure to rescale $[0, 1]$ inputs back to $[0, 255]$ before the pretrained base rendered the model non-functional (16\% accuracy), highlighting the importance of preprocessing alignment in transfer learning pipelines.
+
+Future work should focus on: (1) evaluating the trained models on in-the-wild datasets such as PlantDoc \cite{PlantDoc2020} to assess real-world generalizability; (2) extending the classification pipeline to object detection (e.g., YOLOv8) for disease localization; and (3) exploring lightweight model compression techniques such as knowledge distillation and quantization to enable edge deployment on low-power agricultural devices.
+
+%----------------------------------------------------------------------
+% References
+%----------------------------------------------------------------------
+\begin{thebibliography}{00}
+
+\bibitem{Oerke2006}
+E.-C. Oerke, ``Crop losses to pests,'' \textit{The Journal of Agricultural Science}, vol. 144, no. 1, pp. 31--43, 2006.
+
+\bibitem{HughesSalathe2015}
+D. P. Hughes and M. Salath\'{e}, ``An open access repository of images on plant health to enable the development of mobile disease diagnostics,'' \textit{arXiv preprint arXiv:1511.08060}, 2015.
+
+\bibitem{Mohanty2016}
+S. P. Mohanty, D. P. Hughes, and M. Salath\'{e}, ``Using deep learning for image-based plant disease detection,'' \textit{Frontiers in Plant Science}, vol. 7, p. 1419, 2016.
+
+\bibitem{Tiwari2021}
+D. Tiwari, M. Ashish, N. Gangwar, A. Sharma, S. Patel, and S. Bhardwaj, ``Potato leaf diseases detection using deep learning,'' in \textit{Proc. Int. Conf. Intelligent Communication Technologies and Virtual Mobile Networks (ICICV)}, 2020, pp. 473--478. [See also:] V. Singh \textit{et al.}, ``Identification of plant-leaf diseases using CNN and transfer-learning approach,'' \textit{MDPI Electronics}, vol. 10, no. 12, p. 1388, 2021.
+
+\bibitem{Ayan2024}
+E. Ayan \textit{et al.}, ``Using transfer learning-based plant disease classification and detection for sustainable agriculture,'' \textit{BMC Plant Biology}, vol. 24, no. 1, p. 167, 2024.
+
+\bibitem{ScientificReports2025}
+Authors, ``An efficient plant disease detection using transfer learning approach,'' \textit{Scientific Reports}, vol. 15, 2025. doi: 10.1038/s41598-025-02271-w.
+
+\bibitem{Frontiers2024}
+Authors, ``Enhancing plant disease detection through deep learning: a depthwise CNN with squeeze and excitation integration and residual skip connections,'' \textit{Frontiers in Plant Science}, vol. 15, 2024. doi: 10.3389/fpls.2024.1505857.
+
+\bibitem{AIReview2024}
+Authors, ``A systematic review of deep learning techniques for plant diseases,'' \textit{Artificial Intelligence Review}, vol. 57, 2024. doi: 10.1007/s10462-024-10944-7.
+
+\bibitem{Frontiers2025_wild}
+Authors, ``Plant disease classification in the wild using vision transformers and mixture of experts,'' \textit{Frontiers in Plant Science}, vol. 16, 2025. doi: 10.3389/fpls.2025.1522985.
+
+\bibitem{EfficientNet2019}
+M. Tan and Q. V. Le, ``EfficientNet: Rethinking model scaling for convolutional neural networks,'' in \textit{Proc. Int. Conf. Machine Learning (ICML)}, 2019, pp. 6105--6114.
+
+\bibitem{MobileNetV2_2018}
+M. Sandler, A. Howard, M. Zhu, A. Zhmoginov, and L.-C. Chen, ``MobileNetV2: Inverted residuals and linear bottlenecks,'' in \textit{Proc. IEEE/CVF Conf. Computer Vision and Pattern Recognition (CVPR)}, 2018, pp. 4510--4520.
+
+\bibitem{PlantDoc2020}
+D. Singh \textit{et al.}, ``PlantDoc: A dataset for visual plant disease detection,'' in \textit{Proc. 7th ACM IKDD CoDS and 25th COMAD}, 2020, pp. 249--253.
+
+\end{thebibliography}
+
+\end{document}

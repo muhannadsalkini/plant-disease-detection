@@ -1,0 +1,29 @@
+# ─────────────────────────────────────────────────────────────
+# Apple Silicon (M1/M2/M3/M4) — requirements
+# Install with:
+#   python3.11 -m venv venv
+#   source venv/bin/activate
+#   pip install -r requirements.txt
+# ─────────────────────────────────────────────────────────────
+
+# TensorFlow for Apple Silicon (Metal GPU acceleration)
+tensorflow-macos>=2.13.0
+tensorflow-metal>=1.1.0
+
+# Core ML & data
+numpy>=1.23.0,<2.0
+pandas>=1.5.0
+scikit-learn>=1.2.0
+
+# Image handling
+Pillow>=9.0.0
+
+# Visualization
+matplotlib>=3.6.0
+seaborn>=0.12.0
+
+# Dataset download
+kaggle>=1.5.13
+
+# Utilities
+tqdm>=4.64.0
