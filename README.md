@@ -1,7 +1,6 @@
 # 🌿 Plant Disease Detection — BIL539 Term Project
 
 **Author:** Muhannad Salkini  
-**Student ID:** 251129910  
 **Course:** BIL539 — Biruni University, Department of Computer Engineering  
 
 ---
